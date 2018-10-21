@@ -12,7 +12,7 @@ function cw() {
 postexec() {
 if [[ $? -eq 127 ]]; then
 	echo "Redirecting to docker container.."
-	command_wrapper "$wrapper_last_command"
+	cw "$wrapper_last_command"
 fi
 }
 
