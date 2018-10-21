@@ -1,7 +1,12 @@
+__random_container_id() {
+	echo "cw_"$((1 + RANDOM % 100))
+}
+
 function cw() {
 	command="eval \"$@\""
 	command=`echo "$command" | sed 's/cw //'`;
-	docker run -v `pwd`:/pc command_wrapper bash -c "$command"
+	id=`__random_container_id`
+	docker run --rm --name $id -v `pwd`:/pc -it command_wrapper bash -c "$command"
 }
 
 postexec() {
