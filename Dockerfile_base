@@ -1,4 +1,0 @@
-FROM bash:rc
-
-RUN mkdir /pc
-WORKDIR /pc

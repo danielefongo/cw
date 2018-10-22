@@ -1,12 +1,14 @@
+source cw.properties
+
 __random_container_id() {
-	echo "cw_"$((1 + RANDOM % 100))
+	echo "cw_"$((1 + RANDOM % 1000))
 }
 
 function cw() {
 	command="eval \"$@\""
 	command=`echo "$command" | sed 's/cw //'`;
 	id=`__random_container_id`
-	docker run --rm --name $id -v `pwd`:/pc -it command_wrapper bash -c "$command"
+	docker run --rm --name $id -v `pwd`:$MOUNT_DIR -it $IMAGE_NAME bash -c "$command"
 }
 
 postexec() {

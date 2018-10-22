@@ -1,14 +1,17 @@
 #/bin/bash
 
-cat Dockerfile_base > Dockerfile
-echo -e "\n\n#PROVISIONING" >> Dockerfile
+source cw.properties
+
+echo "FROM $FROM" > Dockerfile
+echo "RUN mkdir $MOUNT_DIR" >> Dockerfile
+echo "WORKDIR $MOUNT_DIR" >> Dockerfile
+echo -e "\n#PROVISIONING" >> Dockerfile
 
 cat provisioning.sh | while read line
 do
-	echo $line
 	if [[ "$line" ]]; then
 		echo "RUN $line" >> Dockerfile
 	fi
 done
 
-docker build . -t command_wrapper
+docker build . -t $IMAGE_NAME
