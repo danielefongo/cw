@@ -8,7 +8,10 @@ function cw() {
 	command="eval \"$@\""
 	command=`echo "$command" | sed 's/cw //'`;
 	id=`__random_container_id`
-	docker run --rm --name $id -v `pwd`:$MOUNT_DIR -it $IMAGE_NAME bash -c "$command"
+	docker run --rm --name $id \
+		-v `pwd`:$MOUNT_DIR -v $EXTERNAL_USER_HOME:/root \
+		-it $IMAGE_NAME \
+		bash -c "$command"
 }
 
 postexec() {
