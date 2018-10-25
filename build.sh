@@ -15,3 +15,4 @@ do
 done
 
 docker build . -t $IMAGE_NAME
+rm Dockerfile
