@@ -9,7 +9,7 @@ echo -e "\n#PROVISIONING" >> Dockerfile
 
 cat provisioning.sh | while read line
 do
-	if [[ "$line" ]]; then
+	if [[ "$line" ]] && [[ -z `echo $line | grep -e '^#'` ]]; then
 		echo "RUN $line" >> Dockerfile
 	fi
 done
