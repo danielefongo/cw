@@ -32,6 +32,10 @@ function cwdd() {
 	fi
 }
 
+function cwl() {
+	docker ps | grep -ve '^CONTAINER ID' | grep -e "[a-z0-9]*\s$IMAGE_NAME\s" | rev | cut -f1 -d' ' | rev
+}
+
 function cwa() {
 	name=$1
 	if [[ "$name" ]] && [[ `docker ps | grep $name` ]]; then
