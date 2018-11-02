@@ -20,7 +20,7 @@ function cwd() {
 		docker run -d --name $name \
 		-v `pwd`:$MOUNT_DIR -v $EXTERNAL_USER_HOME:/root \
 		-i $IMAGE_NAME 1>/dev/null
-		echo "Container $name created."
+		echo "Container $name created. Use \"cwa $name\" to attach a shell."
 	fi
 }
 
@@ -29,6 +29,13 @@ function cwdd() {
 	if [[ "$name" ]] && [[ `docker ps | grep $name` ]]; then
 		docker rm -f $name 1>/dev/null
 		echo "Container $name deleted."
+	fi
+}
+
+function cwa() {
+	name=$1
+	if [[ "$name" ]] && [[ `docker ps | grep $name` ]]; then
+		docker exec -it "$name" sh
 	fi
 }
 
