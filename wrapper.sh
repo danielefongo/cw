@@ -14,6 +14,24 @@ function cw() {
 		bash -c "$command"
 }
 
+function cwd() {
+	name=$1
+	if [[ "$name" ]] && [[ -z `docker ps | grep $name` ]]; then
+		docker run -d --name $name \
+		-v `pwd`:$MOUNT_DIR -v $EXTERNAL_USER_HOME:/root \
+		-i $IMAGE_NAME 1>/dev/null
+		echo "Container $name created."
+	fi
+}
+
+function cwdd() {
+	name=$1
+	if [[ "$name" ]] && [[ `docker ps | grep $name` ]]; then
+		docker rm -f $name 1>/dev/null
+		echo "Container $name deleted."
+	fi
+}
+
 postexec() {
 if [[ $? -eq 127 ]]; then
 	echo "Redirecting to docker container.."
