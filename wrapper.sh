@@ -15,7 +15,7 @@ function cw() {
 	__delete_docker_net
 }
 
-function cwd() {
+function cw-durable() {
 	name=$1
 	if [[ "$name" ]] && [[ -z `docker ps | grep $name` ]]; then
 		__create_docker_net
@@ -23,11 +23,11 @@ function cwd() {
 		-v `pwd`:$MOUNT_DIR -v $EXTERNAL_USER_HOME:/root \
 		--network $IMAGE_NAME \
 		-i $IMAGE_NAME 1>/dev/null
-		echo "Container $name created. Use \"cwa $name\" to attach a shell."
+		echo "Container $name created. Use \"cw-attach $name\" to attach a shell."
 	fi
 }
 
-function cwdd() {
+function cw-delete() {
 	for name in $@
 	do
 		if [[ "$name" ]] && [[ `docker ps | grep $name` ]]; then
@@ -38,11 +38,11 @@ function cwdd() {
 	__delete_docker_net
 }
 
-function cwl() {
+function cw-list() {
 	docker ps | grep -ve '^CONTAINER ID' | grep -e "[a-z0-9]*\s$IMAGE_NAME\s" | rev | cut -f1 -d' ' | rev
 }
 
-function cwa() {
+function cw-attach() {
 	name=$1
 	if [[ "$name" ]] && [[ `docker ps | grep $name` ]]; then
 		docker exec -it "$name" sh
@@ -62,7 +62,7 @@ function __create_docker_net() {
 }
 
 function __delete_docker_net() {
-	if [[ -z "`cwl`" ]]; then
+	if [[ -z "`cw-list`" ]]; then
 		docker network rm $IMAGE_NAME 1>/dev/null
 	fi
 }
