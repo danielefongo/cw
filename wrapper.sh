@@ -23,6 +23,29 @@ function cw-init() {
 	__build_docker_file
 }
 
+function cw-package-install() {
+	__exit_if_not_initialized && return
+
+	app="$1"
+	packages=( $(cw /usr/lib/command-not-found $app | grep -E '^( \*|apt install)' | rev | cut -f1 -d' ' | rev) )
+	packages_number=${#packages[@]}
+
+	if [[ $packages_number -eq 0 ]]; then
+		echo "Package for $app already installed or not existing."
+	elif [[ $packages_number -eq 1 ]]; then
+		cw-build-step "RUN apt-get install -yqq ${packages[0]}"
+	else
+		count=0
+		for package in "${packages[@]}"
+		do
+			echo "$count - $package"
+			count=$((count + 1))
+		done
+		read -p "Select the package to be installed (0-$((count-1))): " selected
+		cw-build-step "RUN apt-get install -yqq ${packages[$selected]}"	
+	fi
+}
+
 function cw-build-step() {
 	__exit_if_not_initialized && return
 
