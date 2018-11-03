@@ -24,6 +24,8 @@ function cw-init() {
 }
 
 function cw() {
+	__exit_if_not_initialized && return
+
 	command="eval \"$@\""
 	command=`echo "$command" | sed 's/cw //'`;
 	id=`__random_container_id`
@@ -37,6 +39,8 @@ function cw() {
 }
 
 function cw-durable() {
+	__exit_if_not_initialized && return
+
 	name=$1
 	if [[ "$name" ]] && [[ -z `docker ps | grep $name` ]]; then
 		__create_docker_net
@@ -49,6 +53,8 @@ function cw-durable() {
 }
 
 function cw-delete() {
+	__exit_if_not_initialized && return
+
 	for name in $@
 	do
 		if [[ "$name" ]] && [[ `docker ps | grep $name` ]]; then
@@ -60,10 +66,14 @@ function cw-delete() {
 }
 
 function cw-list() {
+	__exit_if_not_initialized && return
+
 	docker ps | grep -ve '^CONTAINER ID' | grep -e "[a-z0-9]*\s$IMAGE_NAME\s" | rev | cut -f1 -d' ' | rev
 }
 
 function cw-attach() {
+	__exit_if_not_initialized && return
+	
 	name=$1
 	if [[ "$name" ]] && [[ `docker ps | grep $name` ]]; then
 		docker exec -it "$name" sh
@@ -131,6 +141,13 @@ apt-get install -yqq command-not-found" >> "$properties_location/provisioning.sh
 	fi
 }
 
+function __exit_if_not_initialized() {
+	if [[ -z "$properties_location" ]]; then 
+		echo "Not initialized. Run cw-init in folder containing \"cw.properties\" file."
+		return 0
+	fi
+	return 1
+}
 
 postexec() {
 if [[ $? -eq 127 ]]; then
