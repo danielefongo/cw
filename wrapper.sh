@@ -73,7 +73,7 @@ function cw-list() {
 
 function cw-attach() {
 	__exit_if_not_initialized && return
-	
+
 	name=$1
 	if [[ "$name" ]] && [[ `docker ps | grep $name` ]]; then
 		docker exec -it "$name" sh
@@ -104,12 +104,7 @@ RUN mkdir $MOUNT_DIR
 WORKDIR $MOUNT_DIR" > "$properties_location/Dockerfile"
 
 	__init_provisioning_file_if_not_existing
-	cat "$properties_location/provisioning.sh" | while read line
-	do
-		if [[ "$line" ]] && [[ -z `echo $line | grep -e '^#'` ]]; then
-			echo "RUN $line" >> "$properties_location/Dockerfile"
-		fi
-	done
+	cat "$properties_location/provisioning.sh" | grep -v -e '^#' >> "$properties_location/Dockerfile"
 
 	! [[ -d "$tmp_context_dir" ]] && mkdir "$tmp_context_dir"
 	docker build -f "$properties_location/Dockerfile" "$tmp_context_dir" -t $IMAGE_NAME
@@ -136,8 +131,8 @@ function __update_properties_location_or_exit() {
 function __init_provisioning_file_if_not_existing() {
 	if ! [[ -f "$properties_location/provisioning.sh" ]]; then
 		echo "#Insert commands to be executed during docker build
-apt-get update -yqq && apt-get upgrade -yqq
-apt-get install -yqq command-not-found" >> "$properties_location/provisioning.sh"
+RUN apt-get update -yqq && apt-get upgrade -yqq
+RUN apt-get install -yqq command-not-found" >> "$properties_location/provisioning.sh"
 	fi
 }
 
