@@ -103,6 +103,10 @@ WORKDIR $MOUNT_DIR" > "$properties_location/Dockerfile"
 
 	! [[ -d "$tmp_context_dir" ]] && mkdir "$tmp_context_dir"
 	docker build -f "$properties_location/Dockerfile" "$tmp_context_dir" -t $IMAGE_NAME
+	if [[ $? != 0 ]]; then
+		echo "Build failed. Reverting."
+		sed -i -e '$d' "$properties_location/provisioning.sh"
+	fi
 	rm -rf "$tmp_context_dir"
 	rm "$properties_location/Dockerfile"
 }
