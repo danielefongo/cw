@@ -23,6 +23,24 @@ function cw-init() {
 	__build_docker_file
 }
 
+function cw-build-step() {
+	__exit_if_not_initialized && return
+
+	command="$@"
+
+	if [[ "`cw-list`" ]]; then
+		read -n1 -p "There are active containers with image $IMAGE_NAME. This operation will delete them. Do you want to continue? (y/n) " confirm
+		echo -e "\n" >&2
+		if [ $confirm == 'y' ]; then
+			echo "Removing containers."
+			cw-delete `cw-list`
+		fi
+	fi
+
+	echo "$command" >> "$properties_location/provisioning.sh"
+	__build_docker_file
+}
+
 function cw() {
 	__exit_if_not_initialized && return
 
