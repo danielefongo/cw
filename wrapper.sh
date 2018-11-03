@@ -1,6 +1,27 @@
-source cw.properties
+properties_location=""
+tmp_context_dir="/tmp/cw"
 
 # -------- Main functions -------- 
+
+function cw-init() {
+	__update_properties_location_or_exit && return
+
+	new_image_name=`cat $properties_location/cw.properties | grep 'IMAGE_NAME' | cut -f2 -d"="`
+	if [[ "$IMAGE_NAME" ]] && [[ "`cw-list`" ]]; then
+		if [[ "$IMAGE_NAME" != "$new_image_name" ]]; then
+			read -n1 -p "There are active containers with image $IMAGE_NAME. Do you want to remove them? (y/n) " confirm
+			echo -e "\n" >&2
+			if [ $confirm == 'y' ]; then
+				echo "Removing old containers."
+				cw-delete `cw-list`
+			fi
+		fi
+	fi
+
+	source "$properties_location/cw.properties"
+
+	__build_docker_file
+}
 
 function cw() {
 	command="eval \"$@\""
@@ -66,6 +87,46 @@ function __delete_docker_net() {
 		docker network rm $IMAGE_NAME 1>/dev/null
 	fi
 }
+
+function __build_docker_file() {
+	echo "FROM $FROM
+RUN mkdir $MOUNT_DIR
+WORKDIR $MOUNT_DIR" > "$properties_location/Dockerfile"
+
+	__init_provisioning_file_if_not_existing
+	cat "$properties_location/provisioning.sh" | while read line
+	do
+		if [[ "$line" ]] && [[ -z `echo $line | grep -e '^#'` ]]; then
+			echo "RUN $line" >> "$properties_location/Dockerfile"
+		fi
+	done
+
+	! [[ -d "$tmp_context_dir" ]] && mkdir "$tmp_context_dir"
+	docker build -f "$properties_location/Dockerfile" "$tmp_context_dir" -t $IMAGE_NAME
+	rm -rf "$tmp_context_dir"
+	rm "$properties_location/Dockerfile"
+}
+
+function __update_properties_location_or_exit() {
+	if ! [[ -f "cw.properties" ]]; then
+		echo "cw.properties file not found."
+		if [[ $properties_location ]]; then
+			echo "Keeping the cw.properties in $properties_location"
+		fi
+		return 0
+	fi
+	properties_location=`pwd`
+	return 1
+}
+
+function __init_provisioning_file_if_not_existing() {
+	if ! [[ -f "$properties_location/provisioning.sh" ]]; then
+		echo "#Insert commands to be executed during docker build
+apt-get update -yqq && apt-get upgrade -yqq
+apt-get install -yqq command-not-found" >> "$properties_location/provisioning.sh"
+	fi
+}
+
 
 postexec() {
 if [[ $? -eq 127 ]]; then
