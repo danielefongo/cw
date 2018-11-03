@@ -28,12 +28,14 @@ function cwd() {
 }
 
 function cwdd() {
-	name=$1
-	if [[ "$name" ]] && [[ `docker ps | grep $name` ]]; then
-		docker rm -f $name 1>/dev/null
-		echo "Container $name deleted."
-		__delete_docker_net
-	fi
+	for name in $@
+	do
+		if [[ "$name" ]] && [[ `docker ps | grep $name` ]]; then
+			docker rm -f $name 1>/dev/null
+			echo "Container $name deleted."
+		fi
+	done
+	__delete_docker_net
 }
 
 function cwl() {
