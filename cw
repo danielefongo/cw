@@ -7,6 +7,6 @@ function cw() {
     if [[ $valid_command ]]; then
     	__cw_$subcommand $@
     else
-    	echo "Invalid subcommand."
+		echo -e "Invalid subcommand.\nRun \"cw help\" to show the man page."
     fi
 }

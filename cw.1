@@ -1,0 +1,81 @@
+.TH CW 1
+
+.SH NAME
+cw \- command wrapper that use docker containers.
+
+.SH SYNOPSIS
+.B cw
+\fBsubcommand\fR [\fIparameters...\fR]
+
+.SH DESCRIPTION
+.B cw
+wrap commands inside a docker container.
+
+.SH SUBCOMMANDS
+
+.TP
+\fBattach\fR \fIcontainer-name\fR
+Attach a shell to a durable container.
+
+.TP
+\fBbuild-step\fR \fIbinary\fR
+Add a step to the docker pipeline and build the image. It reverts the pipeline in case of build failure.
+
+.TP
+\fBdelete\fR \fIcontainer-names...\fR
+Delete a list of durable containers.
+
+.TP
+\fBdurable\fR \fIcontainer-name\fR
+Create a durable container. This container can see only folders and files inside the path where \fBcw\fR is executed and can be also reached by another container created with the same cw.properties using its name has host.
+
+.TP
+\fBhelp\fR
+Show this man page.
+
+.TP
+\fBinit\fR
+Initialize image using cw.properties file.
+It must be run in the location where cw.properties file is located.
+
+.TP
+\fBlist\fR
+Show all running durable containers.
+
+.TP
+\fBpackage-install\fR \fIbinary\fR
+It adds a package installation step to the docker container using binary name (i.e. java, mvn), suggesting all possible packages if the binary is contained in more than one application. It reverts the pipeline in case of build failure.
+
+.TP
+\fBrun\fR \fIcommand\fR
+Execute a command inside a container. This container can see only folders and files inside the path where \fBcw\fR is executed.
+
+.SH CONFIG FILE
+The config file should named as \'cw.properties\' and should be like this:
+
+.B MOUNT_DIR=/my_beautiful_dir
+.RS 0
+.B FROM=ubuntu:xenial
+.RS 0
+.B IMAGE_NAME=the_answer_is_42
+.RS 0
+.B EXTERNAL_USER_HOME=~/.secrets
+.PP
+
+Details about this variables are showed below:
+
+.TP
+.B MOUNT_DIR
+It represents the directory where the actual directory (where \fBcw\fR is executed) is mounted.
+
+.TP
+.B FROM
+It represents the base docker image. You \fBMUST\fR use a ubuntu-based image because the program internally use \fBapt-get\fR package manager.
+
+.TP
+.B IMAGE_NAME
+It represents the name used for the docker image. Containers belonging to the same name are visible to each other.
+
+.TP
+.B EXTERNAL_USER_HOME
+It represents the host folder associated with the home of the container's user.

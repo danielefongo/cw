@@ -1,6 +1,11 @@
 tmp_context_dir="/tmp/cw"
+cw_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 # -------- Main functions -------- 
+
+function __cw_help() {
+	man $cw_dir/cw.1
+}
 
 function __cw_init() {
 	__update_properties_location_or_exit && return
