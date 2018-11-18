@@ -1,19 +1,18 @@
-properties_location=""
 tmp_context_dir="/tmp/cw"
 
 # -------- Main functions -------- 
 
-function cw-init() {
+function __cw_init() {
 	__update_properties_location_or_exit && return
 
 	new_image_name=`cat $properties_location/cw.properties | grep 'IMAGE_NAME' | cut -f2 -d"="`
-	if [[ "$IMAGE_NAME" ]] && [[ "`cw-list`" ]]; then
+	if [[ "$IMAGE_NAME" ]] && [[ "`__cw_list`" ]]; then
 		if [[ "$IMAGE_NAME" != "$new_image_name" ]]; then
 			read -n1 -p "There are active containers with image $IMAGE_NAME. Do you want to remove them? (y/n) " confirm
 			echo -e "\n" >&2
 			if [ $confirm == 'y' ]; then
 				echo "Removing old containers."
-				cw-delete `cw-list`
+				__cw_delete `__cw_list`
 			fi
 		fi
 	fi
@@ -23,17 +22,17 @@ function cw-init() {
 	__build_docker_file
 }
 
-function cw-package-install() {
+function __cw_package-install() {
 	__exit_if_not_initialized && return
 
 	app="$1"
-	packages=( $(cw /usr/lib/command-not-found $app | grep -E '^( \*|apt install)' | rev | cut -f1 -d' ' | rev) )
+	packages=( $(__cw_run /usr/lib/command-not-found $app | grep -E '^( \*|apt install)' | rev | cut -f1 -d' ' | rev) )
 	packages_number=${#packages[@]}
 
 	if [[ $packages_number -eq 0 ]]; then
 		echo "Package for $app already installed or not existing."
 	elif [[ $packages_number -eq 1 ]]; then
-		cw-build-step "RUN apt-get install -yqq ${packages[0]}"
+		__cw_build-step "RUN apt-get install -yqq ${packages[0]}"
 	else
 		count=0
 		for package in "${packages[@]}"
@@ -42,21 +41,21 @@ function cw-package-install() {
 			count=$((count + 1))
 		done
 		read -p "Select the package to be installed (0-$((count-1))): " selected
-		cw-build-step "RUN apt-get install -yqq ${packages[$selected]}"	
+		__cw_build-step "RUN apt-get install -yqq ${packages[$selected]}"
 	fi
 }
 
-function cw-build-step() {
+function __cw_build-step() {
 	__exit_if_not_initialized && return
 
 	command="$@"
 
-	if [[ "`cw-list`" ]]; then
+	if [[ "`__cw_list`" ]]; then
 		read -n1 -p "There are active containers with image $IMAGE_NAME. This operation will delete them. Do you want to continue? (y/n) " confirm
 		echo -e "\n" >&2
 		if [ $confirm == 'y' ]; then
 			echo "Removing containers."
-			cw-delete `cw-list`
+			__cw_delete `__cw_list`
 		fi
 	fi
 
@@ -64,7 +63,7 @@ function cw-build-step() {
 	__build_docker_file
 }
 
-function cw() {
+function __cw_run() {
 	__exit_if_not_initialized && return
 
 	command="eval \"$@\""
@@ -79,7 +78,7 @@ function cw() {
 	__delete_docker_net
 }
 
-function cw-durable() {
+function __cw_durable() {
 	__exit_if_not_initialized && return
 
 	name=$1
@@ -89,11 +88,11 @@ function cw-durable() {
 		-v `pwd`:$MOUNT_DIR -v $EXTERNAL_USER_HOME:/root \
 		--network $IMAGE_NAME \
 		-i $IMAGE_NAME 1>/dev/null
-		echo "Container $name created. Use \"cw-attach $name\" to attach a shell."
+		echo "Container $name created. Use \"cw attach $name\" to attach a shell."
 	fi
 }
 
-function cw-delete() {
+function __cw_delete() {
 	__exit_if_not_initialized && return
 
 	for name in $@
@@ -106,13 +105,13 @@ function cw-delete() {
 	__delete_docker_net
 }
 
-function cw-list() {
+function __cw_list() {
 	__exit_if_not_initialized && return
 
 	docker ps | grep -ve '^CONTAINER ID' | grep -e "[a-z0-9]*\s$IMAGE_NAME\s" | rev | cut -f1 -d' ' | rev
 }
 
-function cw-attach() {
+function __cw_attach() {
 	__exit_if_not_initialized && return
 
 	name=$1
@@ -134,7 +133,7 @@ function __create_docker_net() {
 }
 
 function __delete_docker_net() {
-	if [[ -z "`cw-list`" ]]; then
+	if [[ -z "`__cw_list`" ]]; then
 		docker network rm $IMAGE_NAME 1>/dev/null
 	fi
 }
@@ -179,7 +178,7 @@ RUN apt-get install -yqq command-not-found" >> "$properties_location/provisionin
 
 function __exit_if_not_initialized() {
 	if [[ -z "$properties_location" ]]; then 
-		echo "Not initialized. Run cw-init in folder containing \"cw.properties\" file."
+		echo "Not initialized. Run \"cw init\" in folder containing \"cw.properties\" file."
 		return 0
 	fi
 	return 1
@@ -188,7 +187,7 @@ function __exit_if_not_initialized() {
 postexec() {
 if [[ $? -eq 127 ]]; then
 	echo "Redirecting to docker container.."
-	cw "$wrapper_last_command"
+	__cw_run "$wrapper_last_command"
 fi
 }
 
