@@ -9,16 +9,17 @@ cw \- command wrapper that use docker containers.
 
 .SH DESCRIPTION
 .B cw
-wrap commands inside a docker container.
+is a bash utility tool that let run not installed commands inside a docker container. Once initializated, every missing command is redirected to a docker container. All the info about the creation of docker pipeline are detailed in \fISUBCOMMANDS\fR section.
 
 .SH SUBCOMMANDS
+cw can autosuggest commands and arguments. The list of subcommands is showed here:
 
 .TP
 \fBattach\fR \fIcontainer-name\fR
 Attach a shell to a durable container.
 
 .TP
-\fBbuild-step\fR \fIbinary\fR
+\fBbuild-step\fR \fIdocker-statement\fR
 Add a step to the docker pipeline and build the image. It reverts the pipeline in case of build failure.
 
 .TP

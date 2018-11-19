@@ -1,5 +1,4 @@
 tmp_context_dir="/tmp/cw"
-cw_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 # -------- Main functions -------- 
 
