@@ -1,6 +1,6 @@
 cw_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
-source "$cw_dir/wrapper.sh"
+source "$cw_dir/wrapper"
 
 function cw() {
 	subcommand=$1
