@@ -7,7 +7,7 @@ function __cw_help() {
 }
 
 function __cw_init() {
-	__update_properties_location_or_exit && return
+	__update_properties_location_or_create
 
 	new_image_name=`cat $properties_location/cw.properties | grep 'IMAGE_NAME' | cut -f2 -d"="`
 	if [[ "$IMAGE_NAME" ]] && [[ "`__cw_list`" ]]; then
@@ -160,16 +160,22 @@ WORKDIR $MOUNT_DIR" > "$properties_location/Dockerfile"
 	rm "$properties_location/Dockerfile"
 }
 
-function __update_properties_location_or_exit() {
+function __update_properties_location_or_create() {
 	if ! [[ -f "cw.properties" ]]; then
-		echo "cw.properties file not found."
-		if [[ $properties_location ]]; then
-			echo "Keeping the cw.properties in $properties_location"
-		fi
-		return 0
+		__create_default_cw_properties
+		echo "Creating default cw.properties in $(pwd)"
 	fi
 	properties_location=`pwd`
-	return 1
+	echo "Using the cw.properties in $properties_location"
+}
+
+function __create_default_cw_properties() {
+	if [[ ! -f "$(pwd)/cw.properties" ]]; then
+		echo "MOUNT_DIR=/default
+FROM=ubuntu:xenial
+IMAGE_NAME=default
+EXTERNAL_USER_HOME=$(pwd)" > cw.properties
+	fi
 }
 
 function __init_provisioning_file_if_not_existing() {

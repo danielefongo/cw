@@ -4,13 +4,13 @@ source "$cw_dir/wrapper"
 
 function cw() {
 	subcommand=$1
-    shift
-    valid_command=`declare -f __cw_$subcommand`
-    if [[ $valid_command ]]; then
-    	__cw_$subcommand $@
-    else
-		echo -e "Invalid subcommand.\nRun \"cw help\" to show the man page."
-    fi
+  shift
+  valid_command=`declare -f __cw_$subcommand`
+  if [[ $valid_command ]]; then
+  	__cw_$subcommand $@
+  else
+	echo -e "Invalid subcommand.\nRun \"cw help\" to show the man page."
+  fi
 }
 
 shell=`ps -p $$ | awk '{print $NF}' | tail -1`
