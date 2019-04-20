@@ -1,6 +1,6 @@
 tmp_context_dir="/tmp/cw"
 
-# -------- Main functions -------- 
+# -------- Main functions --------
 
 function __cw_help() {
 	man $cw_dir/cw.1
@@ -124,7 +124,7 @@ function __cw_attach() {
 	fi
 }
 
-# -------- Util functions -------- 
+# -------- Util functions --------
 
 function __random_container_id() {
 	echo "cw_"$((1 + RANDOM % 1000))
@@ -181,26 +181,41 @@ RUN apt-get install -yqq command-not-found" >> "$properties_location/provisionin
 }
 
 function __exit_if_not_initialized() {
-	if [[ -z "$properties_location" ]]; then 
+	if [[ -z "$properties_location" ]]; then
 		echo "Not initialized. Run \"cw init\" in folder containing \"cw.properties\" file."
 		return 0
 	fi
 	return 1
 }
 
+# common pre-exec
+preexec_invoke_exec () {
+  [ -n "$COMP_LINE" ] && return
+  [ "$BASH_COMMAND" = "$PROMPT_COMMAND" ] && return
+  local this_command=`HISTTIMEFORMAT= history 1 | sed -e "s/^[ ]*[0-9]*[ ]*//"`;
+  wrapper_last_command="$this_command"
+  return 1
+}
+
+# bash command not found
 postexec() {
-if [[ $? -eq 127 ]]; then
+	if [[ $? -eq 127 ]]; then
+	       echo "Redirecting to docker container.."
+	       __cw_run "$wrapper_last_command"
+	fi
+}
+
+# zsh command not found
+command_not_found_handler () {
 	echo "Redirecting to docker container.."
 	__cw_run "$wrapper_last_command"
+}
+
+shell=`ps -p $$ | awk '{print $NF}' | tail -1`
+
+if [[ "$shell" =~ "zsh" ]]; then
+	add-zsh-hook preexec preexec_invoke_exec
+else
+	trap 'preexec_invoke_exec' DEBUG
+	PROMPT_COMMAND=postexec
 fi
-}
-
-preexec_invoke_exec () {
-    [ -n "$COMP_LINE" ] && return
-    [ "$BASH_COMMAND" = "$PROMPT_COMMAND" ] && return
-    local this_command=`HISTTIMEFORMAT= history 1 | sed -e "s/^[ ]*[0-9]*[ ]*//"`;
-    wrapper_last_command="$this_command"
-}
-
-trap 'preexec_invoke_exec' DEBUG
-PROMPT_COMMAND=postexec
